@@ -116,11 +116,47 @@ class MansionLevel1 {
         }
       };
 
+      // Add a cauldron NPC for potion making
+      const sprite_src_cauldron = path + "/images/gamify/cauldron.png";
+      const sprite_data_cauldron = {
+        id: 'Cauldron',
+        greeting: "A mysterious bubbling cauldron. Press E to inspect.",
+        src: sprite_src_cauldron,
+        SCALE_FACTOR: 4,
+        ANIMATION_RATE: 100,
+        pixels: {width: 256, height: 256},
+        INIT_POSITION: { x: (width * 3 / 4), y: (height / 2) },
+        orientation: {rows: 1, columns: 1},
+        down: {row: 0, start: 0, columns: 1},
+        hitbox: {widthPercentage: 0.3, heightPercentage: 0.3},
+        dialogues: [
+          "The cauldron bubbles ominously...",
+          "Perhaps you could make something if you had the right ingredients?"
+        ],
+        interact: function() {
+          if (this.dialogueSystem && this.dialogueSystem.isDialogueOpen()) {
+            this.dialogueSystem.closeDialogue();
+            return;
+          }
+
+          // Check if player has ingredients (you'll need to implement this)
+          const hasIngredients = false; // Replace with actual check
+
+          if (hasIngredients) {
+            alert("You have the ingredients to make a potion!");
+            // Add potion making logic here
+          } else {
+            alert("You need to find ingredients first. Check the pantry!");
+          }
+        }
+      };
+
     // List of objects definitions for this level
     this.classes = [
       { class: GameEnvBackground, data: image_data_background },
       { class: Player, data: sprite_data_mc },
-      { class: Npc, data: sprite_data_pantrydoor }
+      { class: Npc, data: sprite_data_pantrydoor },
+      { class: Npc, data: sprite_data_cauldron }
     ];
 
     // Add pantry exit object to allow exiting the pantry/kitchen.
