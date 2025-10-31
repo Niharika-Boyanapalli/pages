@@ -146,13 +146,6 @@ class MansionLevel1 {
         }
       };
 
-<<<<<<< HEAD
-    // Initialize background music
-    const backgroundMusic = new Audio(path + "/audio/spooky-scary-skeletons.mp3");
-    backgroundMusic.loop = true;
-    backgroundMusic.volume = 0.5;
-    backgroundMusic.play();
-=======
       // Add a cauldron NPC for potion making
       const sprite_src_cauldron = path + "/images/gamify/cauldron.png";
       const sprite_data_cauldron = {
@@ -187,7 +180,23 @@ class MansionLevel1 {
           }
         }
       };
->>>>>>> 55a8d2165b2a94c8c1cb89e000ff3d7efe0f9608
+
+    // Initialize background music with better error handling
+    try {
+      const backgroundMusic = new Audio(path + "/audio/spooky-scary-skeletons.mp3");
+      backgroundMusic.loop = true;
+      backgroundMusic.volume = 0.5;
+      this.backgroundMusic = backgroundMusic;
+      
+      // Wait for audio to be loaded before playing
+      backgroundMusic.addEventListener('canplaythrough', () => {
+        backgroundMusic.play().catch(error => {
+          console.warn("Audio playback failed:", error);
+        });
+      });
+    } catch (error) {
+      console.warn("Audio initialization failed:", error);
+    }
 
     // List of objects definitions for this level
     this.classes = [
@@ -217,6 +226,13 @@ class MansionLevel1 {
     this.classes.push({ class: ExitPantry, data: pantryExitDef });
   }
 
+  // Add cleanup method to stop music when leaving level
+  destroy() {
+    if (this.backgroundMusic) {
+      this.backgroundMusic.pause();
+      this.backgroundMusic.currentTime = 0;
+    }
+  }
 }
 
 // New helper class appended to this file to represent the pantry exit object
@@ -284,4 +300,4 @@ class ExitPantry {
 }
 
 // Fix export to match the declared class name
-export default MansionLevel5;
+export default MansionLevel1;
