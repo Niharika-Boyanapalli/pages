@@ -146,6 +146,12 @@ class MansionLevel1 {
         }
       };
 
+    // Initialize background music
+    const backgroundMusic = new Audio(path + "/audio/spooky-scary-skeletons.mp3");
+    backgroundMusic.loop = true;
+    backgroundMusic.volume = 0.5;
+    backgroundMusic.play();
+
     // List of objects definitions for this level
     this.classes = [
       { class: GameEnvBackground, data: image_data_background },
