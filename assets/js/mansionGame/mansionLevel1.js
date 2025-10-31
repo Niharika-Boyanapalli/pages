@@ -121,7 +121,10 @@ class MansionLevel1 {
                   const gameControl = gameEnv.gameControl;
 
                   // Store original classes so you can return later if desired
-                  gameControl._originalLevelClasses = gameControl.levelClasses;
+                  // Only store once (don't overwrite on repeated enters) so pantry can restore original kitchen level
+                  if (!gameControl._originalLevelClasses) {
+                    gameControl._originalLevelClasses = gameControl.levelClasses;
+                  }
 
                   // TODO: Replace THIS_FILE_HERE with your pantry level import at top:
                   // import THIS_FILE_HERE from './path/to/yourPantryLevel.js'
