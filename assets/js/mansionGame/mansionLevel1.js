@@ -146,21 +146,142 @@ class MansionLevel1 {
         }
       };
 
+<<<<<<< HEAD
     // Initialize background music
     const backgroundMusic = new Audio(path + "/audio/spooky-scary-skeletons.mp3");
     backgroundMusic.loop = true;
     backgroundMusic.volume = 0.5;
     backgroundMusic.play();
+=======
+      // Add a cauldron NPC for potion making
+      const sprite_src_cauldron = path + "/images/gamify/cauldron.png";
+      const sprite_data_cauldron = {
+        id: 'Cauldron',
+        greeting: "A mysterious bubbling cauldron. Press E to inspect.",
+        src: sprite_src_cauldron,
+        SCALE_FACTOR: 4,
+        ANIMATION_RATE: 100,
+        pixels: {width: 256, height: 256},
+        INIT_POSITION: { x: (width * 3 / 4), y: (height / 2) },
+        orientation: {rows: 1, columns: 1},
+        down: {row: 0, start: 0, columns: 1},
+        hitbox: {widthPercentage: 0.3, heightPercentage: 0.3},
+        dialogues: [
+          "The cauldron bubbles ominously...",
+          "Perhaps you could make something if you had the right ingredients?"
+        ],
+        interact: function() {
+          if (this.dialogueSystem && this.dialogueSystem.isDialogueOpen()) {
+            this.dialogueSystem.closeDialogue();
+            return;
+          }
+
+          // Check if player has ingredients (you'll need to implement this)
+          const hasIngredients = false; // Replace with actual check
+
+          if (hasIngredients) {
+            alert("You have the ingredients to make a potion!");
+            // Add potion making logic here
+          } else {
+            alert("You need to find ingredients first. Check the pantry!");
+          }
+        }
+      };
+>>>>>>> 55a8d2165b2a94c8c1cb89e000ff3d7efe0f9608
 
     // List of objects definitions for this level
     this.classes = [
       { class: GameEnvBackground, data: image_data_background },
       { class: Npc, data: objective_sprite_data },
       { class: Player, data: sprite_data_mc },
-      { class: Npc, data: sprite_data_pantrydoor }
+      { class: Npc, data: sprite_data_pantrydoor },
+      { class: Npc, data: sprite_data_cauldron }
     ];
+
+    // Add pantry exit object to allow exiting the pantry/kitchen.
+    // The engine should instantiate this class and call its interact() when the player interacts.
+    // The object will:
+    // - prefer calling gameEnv.onExitPantry() if provided,
+    // - otherwise attempt to set the player position to data.exitPosition,
+    // - also register an "E" key listener (keyCode 69) to trigger exit as a convenience.
+    const pantryExitDef = {
+      id: 'PantryExit',
+      position: { x: 980, y: 420 },       // in-level coordinates for the exit area (tweak as needed)
+      size: { width: 60, height: 120 },
+      exitPosition: { x: 60, y: 420 },    // where the player should appear after exiting
+      keypress: 69,                       // 'E' to exit
+      greeting: 'Press E to exit pantry'
+    };
+
+    // Insert the exit at the end of the classes array
+    this.classes.push({ class: ExitPantry, data: pantryExitDef });
   }
 
 }
 
-export default MansionLevel1;
+// New helper class appended to this file to represent the pantry exit object
+class ExitPantry {
+  constructor(gameEnv, data = {}) {
+    this.gameEnv = gameEnv;
+    this.data = Object.assign({}, data);
+    this.id = this.data.id || 'PantryExit';
+    // register key listener so the player can press E to exit
+    this._keyHandler = (e) => {
+      if (e.keyCode === (this.data.keypress || 69)) {
+        this.interact();
+      }
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('keydown', this._keyHandler);
+    }
+  }
+
+  // Called by the engine when the player interacts (or our key listener)
+  interact() {
+    // Prefer a game-level callback for exiting if available
+    if (this.gameEnv && typeof this.gameEnv.onExitPantry === 'function') {
+      try {
+        this.gameEnv.onExitPantry();
+        return;
+      } catch (err) {
+        console.warn('onExitPantry threw:', err);
+      }
+    }
+
+    // Fallback: try to move the player to a specified exit position
+    const exitPos = this.data.exitPosition || { x: 0, y: 0 };
+    const g = this.gameEnv || {};
+    const player = g.player || (g.game && g.game.player) || null;
+
+    if (player) {
+      if (typeof player.setPosition === 'function') {
+        player.setPosition(exitPos.x, exitPos.y);
+      } else {
+        // best-effort property assignment
+        player.x = exitPos.x;
+        player.y = exitPos.y;
+        if (typeof player.update === 'function') {
+          try { player.update(); } catch (e) { /* ignore */ }
+        }
+      }
+    }
+
+    // If engine exposes a level loader, try to switch to a named hallway level as a convenience
+    if (typeof g.loadLevel === 'function') {
+      try { g.loadLevel('mansionHallway'); } catch (e) { /* ignore */ }
+    }
+
+    console.log(`${this.id}: exited pantry to`, exitPos);
+  }
+
+  // Clean up listeners if engine destroys the object
+  destroy() {
+    if (typeof window !== 'undefined' && this._keyHandler) {
+      window.removeEventListener('keydown', this._keyHandler);
+      this._keyHandler = null;
+    }
+  }
+}
+
+// Fix export to match the declared class name
+export default MansionLevel5;
